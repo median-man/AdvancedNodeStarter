@@ -7,29 +7,27 @@ module.exports = app => {
   app.get('/api/blogs/:id', requireLogin, async (req, res) => {
     const REDIS_URL = 'redis://127.0.0.1:6379'
     const redis = require('redis')
-    const { promisify } = require('util')
+    const util = require('util')
     const redisClient = redis.createClient(REDIS_URL)
+    redisClient.monitor(console.log)
+    redisClient.get = util.promisify(redisClient.get)
     
-    // change interface to use promises
-    redisClient.get = util.promisify(client.get)
-
-    // check for cached data
     const cachedBlogs = await redisClient.get(req.user.id)
+    if (cachedBlogs) {
+      console.log('SERVING FROM CACHE', new Date())
+      res.send(JSON.parse(cachedBlogs))
+      return
+    }
 
-    // TODO
-    // finish implementing caching logic for this route
-
-    // if cached, respond right away
-
-    // if not cached, query and update cache
-
-    // send response
     const blog = await Blog.findOne({
       _user: req.user.id,
       _id: req.params.id
     });
 
+    console.log('SERVING FROM MONGODB', new Date())
     res.send(blog);
+    
+    redisClient.set(req.user.id, JSON.stringify(blog))
   });
 
   app.get('/api/blogs', requireLogin, async (req, res) => {
