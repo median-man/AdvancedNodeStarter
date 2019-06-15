@@ -12,7 +12,15 @@ const createRedisClient = () => {
 }
 const { exec } = mongoose.Query.prototype
 
+mongoose.Query.prototype.cache = async function() {
+  this._useCache = true
+  return this
+}
+
 mongoose.Query.prototype.exec = async function() {
+  if (!this._useCache) {
+    return exec.apply(this, arguments)
+  }
   const key = JSON.stringify({
     ...this.getQuery(),
     collection: this.mongooseCollection.name
