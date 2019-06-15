@@ -6,17 +6,23 @@ const REDIS_URI = 'redis://127.0.0.1:6379'
 
 const createRedisClient = () => {
   const client = redis.createClient(REDIS_URI)
-  client.get = util.promisify(client.get)
   client.hget = util.promisify(client.hget)
-  client.set = util.promisify(client.set)
   client.hset = util.promisify(client.hset)
   return client
 }
+
+ // check the cache for the key
+ const client = createRedisClient()
+
 const { exec } = mongoose.Query.prototype
+
+const DEFAULT_CACHE_OPTIONS = Object.freeze({
+  key: 'default'
+})
 
 mongoose.Query.prototype.cache = async function(options = {}) {
   this._useCache = true
-  this._cacheKey = JSON.stringify(options.key)
+  this._cacheKey = JSON.stringify(options.key || DEFAULT_CACHE_OPTIONS.key)
   return this
 }
 
@@ -24,15 +30,14 @@ mongoose.Query.prototype.exec = async function() {
   if (!this._useCache) {
     return exec.apply(this, arguments)
   }
-  const key = JSON.stringify({
+  const cacheField = JSON.stringify({
     ...this.getQuery(),
     collection: this.mongooseCollection.name
   })
 
-  // check the cache for the key
-  const client = createRedisClient()
+ 
 
-  const cacheValue = await client.hget(this._cacheKey, key)
+  const cacheValue = await client.hget(this._cacheKey, cacheField)
   if (cacheValue) {
     const doc = JSON.parse(cacheValue)
     return Array.isArray(doc)
@@ -41,6 +46,11 @@ mongoose.Query.prototype.exec = async function() {
   }
 
   const queryResult = await exec.apply(this, arguments)
-  client.hset(this._cacheKey, key, JSON.stringify(queryResult), 'EX', 10)
-  return queryResult
+  client.hset(this._cacheKey, cacheField, JSON.stringify(queryResult))
+  client.expire(this._cacheKey, 10)
+  return queryResult  
+}
+
+exports.clearHash = (hashKey) => {
+  client.del(JSON.stringify(hashKey))
 }
