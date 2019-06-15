@@ -12,7 +12,6 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser((id, done) => {
   User
     .findById(id)
-    .cache()
     .then(user => {
       done(null, user);
     });
@@ -30,7 +29,6 @@ passport.use(
       try {
         const existingUser = await User
           .findOne({ googleId: profile.id })
-          .cache();
 
         if (existingUser) {
           return done(null, existingUser);
