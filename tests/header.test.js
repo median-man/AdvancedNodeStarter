@@ -1,7 +1,6 @@
 const puppeteer = require('puppeteer')
-const { Buffer } = require('safe-buffer')
-const Keygrip = require('keygrip')
-const key = require('../config/keys')
+const { createSession } = require("./factories/session");
+
 
 let page, browser
 
@@ -28,29 +27,18 @@ test('header log in navigates to google oath signin page', async () => {
   expect(page.url()).toMatch(/accounts\.google\.com/)
 })
 
-test('shows logout button when signed in', async () => {
+test.only('shows logout button when signed in', async () => {
   // mongo document id from test database, User collection
   //  for test user account
   const testUserId = '5d00eeab903b183b30b71fcd'
-  const sessionObject = {
-    passport: {
-      user: testUserId
-    }
-  }
-  const sessionString = Buffer.from(JSON.stringify(sessionObject)).toString(
-    'base64'
-  )
-  const keygrip = new Keygrip([key.cookieKey])
-  const sig = keygrip.sign(`session=${sessionString}`)
-  const sessionCookie = {
+  const { session, sig } = createSession(testUserId);
+  await page.setCookie({
     name: 'session',
-    value: sessionString
-  }
-  const sigCookie = {
+    value: session
+  }, {
     name: 'session.sig',
     value: sig
-  }
-  await page.setCookie(sessionCookie, sigCookie)
+  })
   await page.goto('localhost:3000')
 
   const logoutUrl = '/auth/logout'
@@ -62,3 +50,4 @@ test('shows logout button when signed in', async () => {
   const text = await page.$eval(querySelector, el => el.textContent)
   expect(text).toEqual(expectedText)
 })
+
