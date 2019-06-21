@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer')
-const { createSession } = require("./factories/session");
-
+const { createSession } = require('./factories/session')
+const { createUser } = require('./factories/user')
 
 let page, browser
 
@@ -27,20 +27,21 @@ test('header log in navigates to google oath signin page', async () => {
   expect(page.url()).toMatch(/accounts\.google\.com/)
 })
 
-test('shows logout button when signed in', async () => {
+test.only('shows logout button when signed in', async () => {
   // mongo document id from test database, User collection
   //  for test user account
-  const user = {
-    _id: '5d00eeab903b183b30b71fcd'
-  }
-  const { session, sig } = createSession(user);
-  await page.setCookie({
-    name: 'session',
-    value: session
-  }, {
-    name: 'session.sig',
-    value: sig
-  })
+  const user = await createUser()
+  const { session, sig } = createSession(user)
+  await page.setCookie(
+    {
+      name: 'session',
+      value: session
+    },
+    {
+      name: 'session.sig',
+      value: sig
+    }
+  )
   await page.goto('localhost:3000')
 
   const logoutUrl = '/auth/logout'
@@ -52,4 +53,3 @@ test('shows logout button when signed in', async () => {
   const text = await page.$eval(querySelector, el => el.textContent)
   expect(text).toEqual(expectedText)
 })
-
