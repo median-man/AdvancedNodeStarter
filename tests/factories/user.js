@@ -1,5 +1,10 @@
-exports.createUser = async () => {
-  return {
-    _id: '5d00eeab903b183b30b71fcd'
-  }
+const mongoose = require('mongoose')
+const User = mongoose.model('User');
+
+/* 
+  Returns promise which resolves to a test User
+  instance
+*/
+exports.createUser = () => {
+  return new User({}).save();
 }
