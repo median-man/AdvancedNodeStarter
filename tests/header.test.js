@@ -27,11 +27,13 @@ test('header log in navigates to google oath signin page', async () => {
   expect(page.url()).toMatch(/accounts\.google\.com/)
 })
 
-test.only('shows logout button when signed in', async () => {
+test('shows logout button when signed in', async () => {
   // mongo document id from test database, User collection
   //  for test user account
-  const testUserId = '5d00eeab903b183b30b71fcd'
-  const { session, sig } = createSession(testUserId);
+  const user = {
+    _id: '5d00eeab903b183b30b71fcd'
+  }
+  const { session, sig } = createSession(user);
   await page.setCookie({
     name: 'session',
     value: session

@@ -4,10 +4,10 @@ const key = require('../../config/keys')
 
 const keygrip = new Keygrip([key.cookieKey])
 
-function createSession(userId) {
+function createSession(user) {
   const sessionObject = {
     passport: {
-      user: userId
+      user: user._id.toString()
     }
   }
   const session = Buffer.from(JSON.stringify(sessionObject)).toString('base64')
