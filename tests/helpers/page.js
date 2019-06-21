@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer')
+const { createSession } = require('../factories/session')
 
 class Page {
   static async create() {
@@ -15,6 +16,21 @@ class Page {
 
   constructor(page) {
     this.page = page
+  }
+
+  async login(user) {
+    const { session, sig } = createSession(user)
+    await this.page.setCookie(
+      {
+        name: 'session',
+        value: session
+      },
+      {
+        name: 'session.sig',
+        value: sig
+      }
+    )
+    await this.page.goto('localhost:3000')
   }
 }
 

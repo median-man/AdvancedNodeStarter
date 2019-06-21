@@ -1,5 +1,4 @@
 const Page = require('./helpers/page')
-const { createSession } = require('./factories/session')
 const { createUser } = require('./factories/user')
 
 let page
@@ -30,18 +29,7 @@ test('shows logout button when signed in', async () => {
   // mongo document id from test database, User collection
   //  for test user account
   const user = await createUser()
-  const { session, sig } = createSession(user)
-  await page.setCookie(
-    {
-      name: 'session',
-      value: session
-    },
-    {
-      name: 'session.sig',
-      value: sig
-    }
-  )
-  await page.goto('localhost:3000')
+  await page.login(user)
 
   const logoutUrl = '/auth/logout'
   const querySelector = `a[href="${logoutUrl}"]`
