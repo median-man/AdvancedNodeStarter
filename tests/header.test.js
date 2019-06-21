@@ -1,19 +1,18 @@
-const puppeteer = require('puppeteer')
+const Page = require('./helpers/page')
 const { createSession } = require('./factories/session')
 const { createUser } = require('./factories/user')
 
-let page, browser
+let page
 
 // initialize browser, page, and navigate to app
 beforeEach(async () => {
-  browser = await puppeteer.launch({ headless: false })
-  page = await browser.newPage()
+  page = await Page.create()
   await page.goto('localhost:3000')
 })
 
 // close browser
 afterEach(async () => {
-  await browser.close()
+  await page.close()
 })
 
 test('header has Blogster brand', async () => {
@@ -27,7 +26,7 @@ test('header log in navigates to google oath signin page', async () => {
   expect(page.url()).toMatch(/accounts\.google\.com/)
 })
 
-test.only('shows logout button when signed in', async () => {
+test('shows logout button when signed in', async () => {
   // mongo document id from test database, User collection
   //  for test user account
   const user = await createUser()
