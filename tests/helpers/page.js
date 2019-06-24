@@ -30,7 +30,9 @@ class Page {
         value: sig
       }
     )
-    await this.page.goto('localhost:3000')
+
+    // google auth redirects to /blogs route
+    await this.page.goto('localhost:3000/blogs')
   }
 
   async getContentsOf(selector) {
