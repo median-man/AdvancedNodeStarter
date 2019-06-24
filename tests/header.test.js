@@ -16,7 +16,7 @@ afterEach(async () => {
 
 test('header has Blogster brand', async () => {
   // select element and return some content from the page
-  const text = await page.$eval('a.brand-logo', el => el.textContent)
+  const text = await page.getContentsOf('a.brand-logo')
   expect(text).toEqual('Blogster')
 })
 
@@ -37,6 +37,6 @@ test('shows logout button when signed in', async () => {
 
   await page.waitFor(querySelector)
 
-  const text = await page.$eval(querySelector, el => el.textContent)
+  const text = await page.getContentsOf(querySelector)
   expect(text).toEqual(expectedText)
 })

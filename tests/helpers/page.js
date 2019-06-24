@@ -32,6 +32,10 @@ class Page {
     )
     await this.page.goto('localhost:3000')
   }
+
+  async getContentsOf(selector) {
+    return this.page.$eval(selector, el => el.innerHTML)
+  }
 }
 
 module.exports = Page
