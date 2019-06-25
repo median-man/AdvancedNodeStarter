@@ -34,4 +34,40 @@ describe('when logged in', () => {
       expect(contentError).toEqual('You must provide a value')
     })
   })
+
+  describe('using valid inputs', () => {
+    const FAKE_BLOG = Object.freeze({
+      title: 'Test',
+      content: 'Test blog content.'
+    })
+
+    beforeEach(async () => {
+      await page.type('.title input', FAKE_BLOG.title)
+      await page.type('.content input', FAKE_BLOG.content)
+      await page.click('form button[type="submit"]')
+    })
+
+    test('submit navigates to review screen', async () => {
+      const reviewTitleText = await page.getContentsOf('form h5')
+      expect(reviewTitleText).toEqual('Please confirm your entries')
+    })
+
+    test('new blog is added to "My Blogs" screen', async () => {
+      const reviewTitleText = await page.getContentsOf('form h5')
+      expect(reviewTitleText).toEqual('Please confirm your entries')
+
+      // click on save blog button
+      await page.click('form button.green')
+
+      // There is only one blog entry because a new user is created for
+      // each test
+      const titleSelector = '.card-title'
+      await page.waitFor(titleSelector)
+      const newBlogEntry = {
+        title: await page.getContentsOf(titleSelector),
+        content: await page.getContentsOf('.card-content p')
+      }
+      expect(newBlogEntry).toMatchObject(FAKE_BLOG)
+    })
+  })
 })
